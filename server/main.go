@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	backlog "node/backlog"
 	client "node/client"
 	node "node/node"
 	"unicode"
@@ -16,6 +17,10 @@ type MeanderServer struct {
 }
 
 func (s *MeanderServer) CreateClient(ctx context.Context, p *ClientPayload) (*Client, error) {
+	if p.Alias == "" || p.Password == "" || p.Secret == "" {
+		return nil, fmt.Errorf("create client request requires: alias, password, secret")
+	}
+
 	peer, ok := peer.FromContext(ctx)
 	if !ok {
 		err := fmt.Errorf("failed to get the peer from context")
@@ -29,7 +34,7 @@ func (s *MeanderServer) CreateClient(ctx context.Context, p *ClientPayload) (*Cl
 	}
 
 	node := node.GetLocalNode()
-	results, err := node.Backlog.FindDocument("clients", "alias", p.Alias)
+	results, err := node.Backlog.FindDocument("local_clients", "alias", p.Alias)
 
 	if err != nil {
 		err := fmt.Errorf("failed to verify the existent document: %v", err)
@@ -78,7 +83,7 @@ func (s *MeanderServer) CreateClient(ctx context.Context, p *ClientPayload) (*Cl
 
 func (s *MeanderServer) ConnectClient(ctx context.Context, p *ClientPayload) (*Connection, error) {
 	node := node.GetLocalNode()
-	results, err := node.Backlog.FindDocument("clients", "alias", p.Alias)
+	results, err := node.Backlog.FindDocument("local_clients", "alias", p.Alias)
 
 	if err != nil {
 		err := fmt.Errorf("failed to verify the existent document: %v", err)
@@ -89,9 +94,9 @@ func (s *MeanderServer) ConnectClient(ctx context.Context, p *ClientPayload) (*C
 	}
 
 	client := results
-	uid, accountId, address := client["_id"], client["account_id"], client["address"]
+	uid := client["_id"]
 
-	localClient, cache := node.RememberClient(uid.(string), accountId.(string), p.Alias, address.(string), p.Secret, p.Password)
+	localClient, cache := node.RetrieveClient(uid.(string), p.Secret)
 	token, err := cache.Token()
 
 	if err != nil {
@@ -132,7 +137,37 @@ func (s *MeanderServer) ValidateToken(ctx context.Context, p *ConnectionPayload)
 		return nil, fmt.Errorf("failed to decrypt the token: %v", err)
 	}
 
-	fmt.Println(payload)
+	backlog := backlog.NewBacklog()
+	cache, err := backlog.GetDocument("cache", uid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cache document: %v", err)
+	}
+
+	matchA := compareDigest(
+		[]byte(cache["computed_key_a"].(string)),
+		[]byte(payload["computed_key_a"].(string)),
+	)
+
+	if !matchA {
+		err := "The computed key A doesn't match"
+		return &Commit{
+			Status: 1,
+			Error:  &err,
+		}, nil
+	}
+
+	matchP := compareDigest(
+		[]byte(cache["computed_key_p"].(string)),
+		[]byte(payload["computed_key_p"].(string)),
+	)
+
+	if !matchP {
+		err := "The computed key P doesn't match"
+		return &Commit{
+			Status: 1,
+			Error:  &err,
+		}, nil
+	}
 
 	return &Commit{}, nil
 
