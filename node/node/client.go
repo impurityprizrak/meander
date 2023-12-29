@@ -37,7 +37,7 @@ func (c Client) CreateCache() client.Cache {
 	hasher := sha256.Sum256([]byte(c.Password))
 	hash := int(binary.BigEndian.Uint64(hasher[:8]))
 
-	ckp := client.GenerateComputedKeyP(hash)
+	ckp := client.GenerateComputedKeyP(int64(hash))
 
 	cache := client.Cache{
 		ComputedKeyA: cka,

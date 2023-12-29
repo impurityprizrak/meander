@@ -6,12 +6,12 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/pem"
 	"fmt"
-	"math"
+	"math/big"
 	mathRand "math/rand"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -132,54 +132,63 @@ func (c CryptoResource) DecryptToken(encrypted string) (map[string]interface{}, 
 }
 
 // Computes the first key of credentials based on the account id
-func GenerateComputedKeyA(account string) string {
-	accountId, _ := strconv.Atoi(account)
+func GenerateComputedKeyA(accountIDStr string) string {
+	accountID, ok := new(big.Int).SetString(accountIDStr, 10)
+	if !ok {
+		return ""
+	}
+
 	mathRand.Seed(time.Now().UnixNano())
 
 	for i := 0; i < 100; i++ {
-		exponent := mathRand.Float64()*(2.0-1.0) + 1.0
-		result := int(math.Pow(float64(accountId), exponent))
-		resultStr := strconv.Itoa(result)
+		exponent := mathRand.Float64() + 1.0
+		result := new(big.Float).SetInt(accountID)
+		result = result.Mul(result, big.NewFloat(exponent))
+		resultInt, _ := result.Int(nil)
 
-		var seed, complement int
+		resultStr := resultInt.Text(10)
+		var seed, complement *big.Int
 		if len(resultStr) > 150 {
-			seed, _ = strconv.Atoi(resultStr[:150])
-			complement, _ = strconv.Atoi(resultStr[150:])
+			seed, _ = new(big.Int).SetString(resultStr[:150], 10)
+			complement, _ = new(big.Int).SetString(resultStr[150:], 10)
 		} else {
-			seed, _ = strconv.Atoi(resultStr)
+			seed = resultInt
+			complement = big.NewInt(0)
 		}
 
-		accountId = seed + complement
+		accountID = new(big.Int).Add(seed, complement)
 	}
 
-	hash := sha256.Sum256([]byte(strconv.Itoa(accountId)))
-	return fmt.Sprintf("%x", hash)
+	hash := sha256.Sum256([]byte(accountID.Text(10)))
+	return hex.EncodeToString(hash[:])
 }
 
 // Computes the second key of credentials based on the password hash
-func GenerateComputedKeyP(pwdHash int) string {
-	pwdHash = int(math.Abs(float64(pwdHash)))
+func GenerateComputedKeyP(pwdHashInt int64) string {
+	pwdHash := big.NewInt(pwdHashInt)
+	pwdHash.Abs(pwdHash)
+
 	mathRand.Seed(time.Now().UnixNano())
 
 	for i := 0; i < 100; i++ {
-		exponent := mathRand.Float64()*(2.0-1.0) + 1.0 // Número aleatório entre 1.0 e 2.0
-		result := int(math.Pow(float64(pwdHash), exponent))
-		resultStr := strconv.Itoa(result)
+		exponent := mathRand.Float64() + 1.0
+		result := new(big.Float).SetInt(pwdHash)
+		result = result.Mul(result, big.NewFloat(exponent))
+		resultInt, _ := result.Int(nil)
 
-		var seed, complement int
+		resultStr := resultInt.Text(10)
+		var seed, complement *big.Int
 		if len(resultStr) > 150 {
-			seed, _ = strconv.Atoi(resultStr[:150])
-			complementStr := resultStr[150:]
-			if complementStr != "" {
-				complement, _ = strconv.Atoi(complementStr)
-			}
+			seed, _ = new(big.Int).SetString(resultStr[:150], 10)
+			complement, _ = new(big.Int).SetString(resultStr[150:], 10)
 		} else {
-			seed, _ = strconv.Atoi(resultStr)
+			seed = resultInt
+			complement = big.NewInt(0)
 		}
 
-		pwdHash = seed + complement
+		pwdHash = new(big.Int).Add(seed, complement)
 	}
 
-	hash := sha256.Sum256([]byte(strconv.Itoa(pwdHash)))
-	return fmt.Sprintf("%x", hash)
+	hash := sha256.Sum256([]byte(pwdHash.Text(10)))
+	return hex.EncodeToString(hash[:])
 }
