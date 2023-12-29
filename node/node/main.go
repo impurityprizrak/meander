@@ -98,7 +98,7 @@ func GetLocalNode() *Node {
 }
 
 // (Over)Writes the node state in local elastic using the current in-memory node state
-func (n Node) SyncWithElastic(nodeIndex string) error {
+func (n Node) SyncWithBacklog(nodeIndex string) error {
 	hasher := sha256.New()
 	hasher.Write([]byte(n.Host))
 	hash := hex.EncodeToString(hasher.Sum(nil))
@@ -123,22 +123,22 @@ func (n Node) SyncWithElastic(nodeIndex string) error {
 // Sends node start signal to local elastic
 func (n *Node) Attach() {
 	n.Status = NodeAlive
-	n.SyncWithElastic("peers")
-	n.SyncWithElastic("node")
+	n.SyncWithBacklog("peers")
+	n.SyncWithBacklog("node")
 }
 
 // Sends node end signal to local elastic
 func (n *Node) Dettach() {
 	n.Status = NodeHibernating
-	n.SyncWithElastic("peers")
-	n.SyncWithElastic("node")
+	n.SyncWithBacklog("peers")
+	n.SyncWithBacklog("node")
 }
 
 // Sends node destroying signal to local elastic
 func (n *Node) Liquidate() {
 	n.Status = NodeLiquidated
-	n.SyncWithElastic("peers")
-	n.SyncWithElastic("node")
+	n.SyncWithBacklog("peers")
+	n.SyncWithBacklog("node")
 }
 
 // Creates a new client in the node
@@ -179,22 +179,7 @@ func (n Node) NewLocalClient(alias, address, secret, password string) *Client {
 	client.PrivateKey = string(client.ImpersonatePrivateKey())
 	cache := client.CreateCache()
 
-	clientBytes, _ := json.Marshal(client)
-
-	var clientData map[string]interface{}
-	if err := json.Unmarshal(clientBytes, &clientData); err != nil {
-		log.Fatalf("Failed to unmarshal client data: %v", err)
-	}
-
-	cacheBytes, _ := json.Marshal(cache)
-	var cacheData map[string]interface{}
-	if err := json.Unmarshal(cacheBytes, &cacheData); err != nil {
-		log.Fatalf("Failed to unmarshal client data: %v", err)
-	}
-
-	n.Backlog.IndexDocument("clients", uuid.String(), clientData)
-	n.Backlog.IndexDocument("cache", uuid.String(), cacheData)
-
+	client.SyncWithBacklog(cache)
 	return &client
 }
 
@@ -224,13 +209,6 @@ func (n Node) RememberClient(uid, accountId, alias, address, secret, password st
 	client.PrivateKey = string(client.ImpersonatePrivateKey())
 	cache := client.CreateCache()
 
-	cacheBytes, _ := json.Marshal(cache)
-	var cacheData map[string]interface{}
-	if err := json.Unmarshal(cacheBytes, &cacheData); err != nil {
-		log.Fatalf("Failed to unmarshal client data: %v", err)
-	}
-
-	n.Backlog.IndexDocument("cache", uid, cacheData)
-
+	client.SyncWithBacklog(cache)
 	return &client, cache
 }

@@ -51,21 +51,38 @@ func (c Client) CreateCache() client.Cache {
 	return cache
 }
 
-// (Over)Writes the client state in local elastic using the current in-memory state
-func (c Client) SyncWithElastic(nodeIndex string) error {
-	nodeBytes, err := json.Marshal(c)
+// (Over)Writes the client state and optionally the client cache in backlog using the current in-memory state
+func (c Client) SyncWithBacklog(ca ...client.Cache) error {
+	clientBytes, err := json.Marshal(c)
 	if err != nil {
-		return fmt.Errorf("failed to marshal the current node: %v", err)
+		return fmt.Errorf("failed to marshal the client: %v", err)
 	}
 
 	var client map[string]interface{}
-	if err := json.Unmarshal(nodeBytes, &client); err != nil {
-		return fmt.Errorf("failed to unmarshal the current node into map: %v", err)
+	if err := json.Unmarshal(clientBytes, &client); err != nil {
+		return fmt.Errorf("failed to unmarshal the client into map: %v", err)
 	}
 
-	err = c.Backlog.IndexDocument(nodeIndex, c.ClientId, client)
+	err = c.Backlog.IndexDocument("clients", c.UID, client)
 	if err != nil {
-		return fmt.Errorf("failed to overwrite the node document: %v", err)
+		return fmt.Errorf("failed to overwrite the client document: %v", err)
+	}
+
+	if len(ca) > 0 {
+		cacheBytes, err := json.Marshal(ca[0])
+		if err != nil {
+			return fmt.Errorf("failed to marshal the cache: %v", err)
+		}
+
+		var cache map[string]interface{}
+		if err := json.Unmarshal(cacheBytes, &cache); err != nil {
+			return fmt.Errorf("failed to unmarshal the cache into map: %v", err)
+		}
+
+		err = c.Backlog.IndexDocument("cache", c.UID, cache)
+		if err != nil {
+			return fmt.Errorf("failed to overwrite the cache document: %v", err)
+		}
 	}
 
 	return nil
