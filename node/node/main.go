@@ -184,28 +184,32 @@ func (n Node) NewLocalClient(alias, address, secret, password string) *Client {
 		log.Fatalf("failed to sync with backlog: %v", err)
 	}
 
+	foreign := client.MakeForeign()
+	err = foreign.SyncWithBacklog()
+	if err != nil {
+		log.Fatalf("failed to sync foreign client with backlog: %v", err)
+	}
+
 	return &client
 }
 
 // Manually builds a client in the node with existing informations
-func (n Node) RememberClient(uid, accountId, alias, address, secret, password string) (*Client, client.Cache) {
-	nodeHasher := sha256.New()
-	nodeHasher.Write([]byte(n.Host))
-	nodeHash := hex.EncodeToString(nodeHasher.Sum(nil))
+func (n Node) RetrieveClient(uid, secret string) (*Client, client.Cache) {
+	document, err := n.GetDocument("local_clients", uid)
 
-	addrHasher := sha256.New()
-	addrHasher.Write(([]byte(address)))
-	addrHash := hex.EncodeToString(addrHasher.Sum(nil))
+	if err != nil {
+		log.Fatalf("failed to retrieve the client document: %v", err)
+	}
 
 	client := Client{
 		Node:        &n,
 		UID:         uid,
-		AccountId:   accountId,
-		Alias:       alias,
-		NodeAddress: nodeHash,
-		Address:     addrHash,
+		AccountId:   document["account_id"].(string),
+		Alias:       document["alias"].(string),
+		NodeAddress: document["node"].(string),
+		Address:     document["address"].(string),
 		Secret:      secret,
-		Password:    password,
+		Password:    document["password"].(string),
 	}
 
 	client.RetrieveCrypto()
@@ -214,9 +218,27 @@ func (n Node) RememberClient(uid, accountId, alias, address, secret, password st
 	client.PrivateKey = string(client.ImpersonatePrivateKey())
 	cache := client.CreateCache()
 
-	err := client.SyncWithBacklog(cache)
+	err = client.SyncWithBacklog(cache)
 	if err != nil {
-		log.Fatalf("failed to sync with backlog: %v", err)
+		log.Fatalf("failed to sync client with backlog: %v", err)
 	}
+
 	return &client, cache
+}
+
+// Manually builds a foreign client in the node with existing informations
+func (n Node) RetrieveForeignClient(clientId string) (*ForeignClient, error) {
+	document, err := n.FindDocument("clients", "client_id", clientId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find the foreign client document: %v", err)
+	}
+
+	client := ForeignClient{
+		Node:        &n,
+		ClientId:    document["client_id"].(string),
+		NodeAddress: document["node"].(string),
+		Address:     document["address"].(string),
+	}
+
+	return &client, nil
 }

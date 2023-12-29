@@ -31,6 +31,10 @@ type CryptoResource struct {
 	PublicKey  *rsa.PublicKey
 }
 
+type Signable interface {
+	ToBytes() []byte
+}
+
 func NewCryptoResource() (*CryptoResource, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 
@@ -61,9 +65,9 @@ func (c CryptoResource) Identity() string {
 }
 
 // Assigns the client transactions using the private key. The signature grants that the transaction was included in a valid block.
-func (c CryptoResource) CreateSignature(in []byte) string {
+func (c CryptoResource) CreateSignature(t Signable) string {
 	hasher := sha256.New()
-	hasher.Write(in)
+	hasher.Write(t.ToBytes())
 	hashed := hasher.Sum(nil)
 
 	signature, err := rsa.SignPKCS1v15(rand.Reader, c.PrivateKey, crypto.SHA256, hashed)
