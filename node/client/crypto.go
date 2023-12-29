@@ -122,7 +122,7 @@ func (c CryptoResource) UploadPrivateKey(secret string, uid string) error {
 		return err
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s/%s/private.pem", BasePath, uid))
+	file, err := os.Create(fmt.Sprintf("%s/%s/private.pem", os.Getenv("BASE_PATH"), uid))
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (c CryptoResource) UploadPublicKey(uid string) error {
 		return err
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s/%s/public.pem", BasePath, uid))
+	file, err := os.Create(fmt.Sprintf("%s/%s/public.pem", os.Getenv("BASE_PATH"), uid))
 	if err != nil {
 		return err
 	}
@@ -152,7 +152,7 @@ func (c CryptoResource) UploadPublicKey(uid string) error {
 
 // Converts the byte array from a I/O stream to a private key
 func DownloadPrivateKey(secret string, uid string) (*rsa.PrivateKey, error) {
-	file, err := os.ReadFile(fmt.Sprintf("%s/%s/private.pem", BasePath, uid))
+	file, err := os.ReadFile(fmt.Sprintf("%s/%s/private.pem", os.Getenv("BASE_PATH"), uid))
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file private.pem: %v", err)
@@ -185,7 +185,7 @@ func DownloadPrivateKey(secret string, uid string) (*rsa.PrivateKey, error) {
 
 // Converts the byte array from a I/O stream to a public key
 func DownloadPublicKey(uid string) (*rsa.PublicKey, error) {
-	file, err := os.ReadFile(fmt.Sprintf("%s/%s/public.pem", BasePath, uid))
+	file, err := os.ReadFile(fmt.Sprintf("%s/%s/public.pem", os.Getenv("BASE_PATH"), uid))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file public.pem: %v", err)
 	}

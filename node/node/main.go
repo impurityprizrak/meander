@@ -169,8 +169,8 @@ func (n Node) NewLocalClient(alias, address, secret, password string) *Client {
 		Password:    pwdHash,
 	}
 
-	if _, err := os.Stat(fmt.Sprintf("%s/%s", BasePath, uuid.String())); os.IsNotExist(err) {
-		os.Mkdir(fmt.Sprintf("%s/%s", BasePath, uuid.String()), 0755)
+	if _, err := os.Stat(fmt.Sprintf("%s/%s", os.Getenv("BASE_PATH"), uuid.String())); os.IsNotExist(err) {
+		os.Mkdir(fmt.Sprintf("%s/%s", os.Getenv("BASE_PATH"), uuid.String()), 0755)
 	}
 
 	client.GenerateCrypto()
@@ -179,7 +179,11 @@ func (n Node) NewLocalClient(alias, address, secret, password string) *Client {
 	client.PrivateKey = string(client.ImpersonatePrivateKey())
 	cache := client.CreateCache()
 
-	client.SyncWithBacklog(cache)
+	err := client.SyncWithBacklog(cache)
+	if err != nil {
+		log.Fatalf("failed to sync with backlog: %v", err)
+	}
+
 	return &client
 }
 
@@ -194,6 +198,7 @@ func (n Node) RememberClient(uid, accountId, alias, address, secret, password st
 	addrHash := hex.EncodeToString(addrHasher.Sum(nil))
 
 	client := Client{
+		Node:        &n,
 		UID:         uid,
 		AccountId:   accountId,
 		Alias:       alias,
@@ -209,6 +214,9 @@ func (n Node) RememberClient(uid, accountId, alias, address, secret, password st
 	client.PrivateKey = string(client.ImpersonatePrivateKey())
 	cache := client.CreateCache()
 
-	client.SyncWithBacklog(cache)
+	err := client.SyncWithBacklog(cache)
+	if err != nil {
+		log.Fatalf("failed to sync with backlog: %v", err)
+	}
 	return &client, cache
 }

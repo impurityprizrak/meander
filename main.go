@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	pb "grpc"
 	"log"
@@ -29,16 +30,23 @@ func waitForSignal() {
 }
 
 func main() {
-	if _, err := os.Stat(node.BasePath); os.IsNotExist(err) {
+	var basePath string
+
+	flag.StringVar(&basePath, "path", "", "The path to store the server resources")
+	flag.Parse()
+
+	os.Setenv("BASE_PATH", basePath)
+
+	if _, err := os.Stat(basePath); os.IsNotExist(err) {
 		err := os.Mkdir(node.BasePath, 0755)
 		if err != nil {
-			log.Fatalf("Failed to create path \"%s\": %v", node.BasePath, err)
+			log.Fatalf("Failed to create path \"%s\": %v", basePath, err)
 		} else {
-			fmt.Printf("Path \"%s\" successfully created\n", node.BasePath)
+			fmt.Printf("Path \"%s\" successfully created\n", basePath)
 		}
 
 	} else {
-		fmt.Printf("Path \"%s\" already created\n", node.BasePath)
+		fmt.Printf("Path \"%s\" already created\n", basePath)
 	}
 
 	node := node.NewLocalNode("0.0.0.0")
