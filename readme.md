@@ -1,7 +1,7 @@
 # Meander
 
 ## General Purposes
-This is an experimental program written in Go that I've designed to learn more about the language. It's a blockchain-like project that provides source code to create nodes and interact with other peers in the network, enabling the creation of transactions and mining blocks.
+This is an experimental program written in Go that I've designed to learn more about the language. It's a blockchain-like project that provides a source code to startup node servers and interact with other peers in the network, enabling the creation of transactions and the blocks mining.
 
 The project structure is as follows:
 
