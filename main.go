@@ -5,7 +5,7 @@ import (
 	pb "grpc"
 	"log"
 	"net"
-	"node"
+	"node/node"
 	"os"
 	"os/signal"
 	"syscall"
@@ -56,7 +56,7 @@ func main() {
 	server := grpc.NewServer()
 	service := &pb.MeanderServer{}
 
-	pb.RegisterMeanderIOServer(server, service)
+	pb.RegisterMeanderClientIOServer(server, service)
 
 	if err = server.Serve(listener); err != nil {
 		log.Fatal(err)

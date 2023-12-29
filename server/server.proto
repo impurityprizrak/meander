@@ -2,12 +2,10 @@ syntax = "proto3";
 
 option go_package = "github.com/impurityprizrak/meander/go";
 
-service MeanderIO {
+service MeanderClientIO {
     rpc CreateClient (ClientPayload) returns (Client);
     rpc ConnectClient (ClientPayload) returns (Connection);
     rpc ValidateToken (ConnectionPayload) returns (Commit);
-    rpc RegisterClient (Client) returns (Commit);
-    rpc RegisterNode (Node) returns (Commit);
 }
 
 message ClientPayload {
@@ -32,13 +30,6 @@ message ConnectionPayload {
     string user_id = 1;
     string token = 2;
     string secret = 3;
-}
-
-message Node {
-    string syncer = 1;
-    string host = 2;
-    string version = 3;
-    string status = 4;
 }
 
 message Commit {

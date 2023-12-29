@@ -19,237 +19,163 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	MeanderIO_CreateClient_FullMethodName   = "/MeanderIO/CreateClient"
-	MeanderIO_ConnectClient_FullMethodName  = "/MeanderIO/ConnectClient"
-	MeanderIO_ValidateToken_FullMethodName  = "/MeanderIO/ValidateToken"
-	MeanderIO_RegisterClient_FullMethodName = "/MeanderIO/RegisterClient"
-	MeanderIO_RegisterNode_FullMethodName   = "/MeanderIO/RegisterNode"
+	MeanderClientIO_CreateClient_FullMethodName  = "/MeanderClientIO/CreateClient"
+	MeanderClientIO_ConnectClient_FullMethodName = "/MeanderClientIO/ConnectClient"
+	MeanderClientIO_ValidateToken_FullMethodName = "/MeanderClientIO/ValidateToken"
 )
 
-// MeanderIOClient is the client API for MeanderIO service.
+// MeanderClientIOClient is the client API for MeanderClientIO service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type MeanderIOClient interface {
+type MeanderClientIOClient interface {
 	CreateClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Client, error)
 	ConnectClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Connection, error)
 	ValidateToken(ctx context.Context, in *ConnectionPayload, opts ...grpc.CallOption) (*Commit, error)
-	RegisterClient(ctx context.Context, in *Client, opts ...grpc.CallOption) (*Commit, error)
-	RegisterNode(ctx context.Context, in *Node, opts ...grpc.CallOption) (*Commit, error)
 }
 
-type meanderIOClient struct {
+type meanderClientIOClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewMeanderIOClient(cc grpc.ClientConnInterface) MeanderIOClient {
-	return &meanderIOClient{cc}
+func NewMeanderClientIOClient(cc grpc.ClientConnInterface) MeanderClientIOClient {
+	return &meanderClientIOClient{cc}
 }
 
-func (c *meanderIOClient) CreateClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Client, error) {
+func (c *meanderClientIOClient) CreateClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Client, error) {
 	out := new(Client)
-	err := c.cc.Invoke(ctx, MeanderIO_CreateClient_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MeanderClientIO_CreateClient_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *meanderIOClient) ConnectClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Connection, error) {
+func (c *meanderClientIOClient) ConnectClient(ctx context.Context, in *ClientPayload, opts ...grpc.CallOption) (*Connection, error) {
 	out := new(Connection)
-	err := c.cc.Invoke(ctx, MeanderIO_ConnectClient_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MeanderClientIO_ConnectClient_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *meanderIOClient) ValidateToken(ctx context.Context, in *ConnectionPayload, opts ...grpc.CallOption) (*Commit, error) {
+func (c *meanderClientIOClient) ValidateToken(ctx context.Context, in *ConnectionPayload, opts ...grpc.CallOption) (*Commit, error) {
 	out := new(Commit)
-	err := c.cc.Invoke(ctx, MeanderIO_ValidateToken_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, MeanderClientIO_ValidateToken_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *meanderIOClient) RegisterClient(ctx context.Context, in *Client, opts ...grpc.CallOption) (*Commit, error) {
-	out := new(Commit)
-	err := c.cc.Invoke(ctx, MeanderIO_RegisterClient_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *meanderIOClient) RegisterNode(ctx context.Context, in *Node, opts ...grpc.CallOption) (*Commit, error) {
-	out := new(Commit)
-	err := c.cc.Invoke(ctx, MeanderIO_RegisterNode_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// MeanderIOServer is the server API for MeanderIO service.
-// All implementations must embed UnimplementedMeanderIOServer
+// MeanderClientIOServer is the server API for MeanderClientIO service.
+// All implementations must embed UnimplementedMeanderClientIOServer
 // for forward compatibility
-type MeanderIOServer interface {
+type MeanderClientIOServer interface {
 	CreateClient(context.Context, *ClientPayload) (*Client, error)
 	ConnectClient(context.Context, *ClientPayload) (*Connection, error)
 	ValidateToken(context.Context, *ConnectionPayload) (*Commit, error)
-	RegisterClient(context.Context, *Client) (*Commit, error)
-	RegisterNode(context.Context, *Node) (*Commit, error)
-	mustEmbedUnimplementedMeanderIOServer()
+	mustEmbedUnimplementedMeanderClientIOServer()
 }
 
-// UnimplementedMeanderIOServer must be embedded to have forward compatible implementations.
-type UnimplementedMeanderIOServer struct {
+// UnimplementedMeanderClientIOServer must be embedded to have forward compatible implementations.
+type UnimplementedMeanderClientIOServer struct {
 }
 
-func (UnimplementedMeanderIOServer) CreateClient(context.Context, *ClientPayload) (*Client, error) {
+func (UnimplementedMeanderClientIOServer) CreateClient(context.Context, *ClientPayload) (*Client, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateClient not implemented")
 }
-func (UnimplementedMeanderIOServer) ConnectClient(context.Context, *ClientPayload) (*Connection, error) {
+func (UnimplementedMeanderClientIOServer) ConnectClient(context.Context, *ClientPayload) (*Connection, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConnectClient not implemented")
 }
-func (UnimplementedMeanderIOServer) ValidateToken(context.Context, *ConnectionPayload) (*Commit, error) {
+func (UnimplementedMeanderClientIOServer) ValidateToken(context.Context, *ConnectionPayload) (*Commit, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ValidateToken not implemented")
 }
-func (UnimplementedMeanderIOServer) RegisterClient(context.Context, *Client) (*Commit, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterClient not implemented")
-}
-func (UnimplementedMeanderIOServer) RegisterNode(context.Context, *Node) (*Commit, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterNode not implemented")
-}
-func (UnimplementedMeanderIOServer) mustEmbedUnimplementedMeanderIOServer() {}
+func (UnimplementedMeanderClientIOServer) mustEmbedUnimplementedMeanderClientIOServer() {}
 
-// UnsafeMeanderIOServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to MeanderIOServer will
+// UnsafeMeanderClientIOServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MeanderClientIOServer will
 // result in compilation errors.
-type UnsafeMeanderIOServer interface {
-	mustEmbedUnimplementedMeanderIOServer()
+type UnsafeMeanderClientIOServer interface {
+	mustEmbedUnimplementedMeanderClientIOServer()
 }
 
-func RegisterMeanderIOServer(s grpc.ServiceRegistrar, srv MeanderIOServer) {
-	s.RegisterService(&MeanderIO_ServiceDesc, srv)
+func RegisterMeanderClientIOServer(s grpc.ServiceRegistrar, srv MeanderClientIOServer) {
+	s.RegisterService(&MeanderClientIO_ServiceDesc, srv)
 }
 
-func _MeanderIO_CreateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MeanderClientIO_CreateClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ClientPayload)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MeanderIOServer).CreateClient(ctx, in)
+		return srv.(MeanderClientIOServer).CreateClient(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MeanderIO_CreateClient_FullMethodName,
+		FullMethod: MeanderClientIO_CreateClient_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeanderIOServer).CreateClient(ctx, req.(*ClientPayload))
+		return srv.(MeanderClientIOServer).CreateClient(ctx, req.(*ClientPayload))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MeanderIO_ConnectClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MeanderClientIO_ConnectClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ClientPayload)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MeanderIOServer).ConnectClient(ctx, in)
+		return srv.(MeanderClientIOServer).ConnectClient(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MeanderIO_ConnectClient_FullMethodName,
+		FullMethod: MeanderClientIO_ConnectClient_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeanderIOServer).ConnectClient(ctx, req.(*ClientPayload))
+		return srv.(MeanderClientIOServer).ConnectClient(ctx, req.(*ClientPayload))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MeanderIO_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _MeanderClientIO_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ConnectionPayload)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(MeanderIOServer).ValidateToken(ctx, in)
+		return srv.(MeanderClientIOServer).ValidateToken(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: MeanderIO_ValidateToken_FullMethodName,
+		FullMethod: MeanderClientIO_ValidateToken_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeanderIOServer).ValidateToken(ctx, req.(*ConnectionPayload))
+		return srv.(MeanderClientIOServer).ValidateToken(ctx, req.(*ConnectionPayload))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _MeanderIO_RegisterClient_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Client)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MeanderIOServer).RegisterClient(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MeanderIO_RegisterClient_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeanderIOServer).RegisterClient(ctx, req.(*Client))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MeanderIO_RegisterNode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Node)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MeanderIOServer).RegisterNode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MeanderIO_RegisterNode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MeanderIOServer).RegisterNode(ctx, req.(*Node))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// MeanderIO_ServiceDesc is the grpc.ServiceDesc for MeanderIO service.
+// MeanderClientIO_ServiceDesc is the grpc.ServiceDesc for MeanderClientIO service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var MeanderIO_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "MeanderIO",
-	HandlerType: (*MeanderIOServer)(nil),
+var MeanderClientIO_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "MeanderClientIO",
+	HandlerType: (*MeanderClientIOServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateClient",
-			Handler:    _MeanderIO_CreateClient_Handler,
+			Handler:    _MeanderClientIO_CreateClient_Handler,
 		},
 		{
 			MethodName: "ConnectClient",
-			Handler:    _MeanderIO_ConnectClient_Handler,
+			Handler:    _MeanderClientIO_ConnectClient_Handler,
 		},
 		{
 			MethodName: "ValidateToken",
-			Handler:    _MeanderIO_ValidateToken_Handler,
-		},
-		{
-			MethodName: "RegisterClient",
-			Handler:    _MeanderIO_RegisterClient_Handler,
-		},
-		{
-			MethodName: "RegisterNode",
-			Handler:    _MeanderIO_RegisterNode_Handler,
+			Handler:    _MeanderClientIO_ValidateToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

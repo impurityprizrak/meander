@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"node"
+	client "node/client"
+	node "node/node"
 	"unicode"
 
 	"google.golang.org/grpc/peer"
 )
 
 type MeanderServer struct {
-	UnimplementedMeanderIOServer
+	UnimplementedMeanderClientIOServer
 }
 
 func (s *MeanderServer) CreateClient(ctx context.Context, p *ClientPayload) (*Client, error) {
@@ -109,19 +110,19 @@ func (s *MeanderServer) ConnectClient(ctx context.Context, p *ClientPayload) (*C
 func (s *MeanderServer) ValidateToken(ctx context.Context, p *ConnectionPayload) (*Commit, error) {
 	uid := p.UserId
 	secret := p.Secret
-	privateKey, err := node.DownloadPrivateKey(secret, uid)
+	privateKey, err := client.DownloadPrivateKey(secret, uid)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to download private key: %v", err)
 	}
 
-	publicKey, err := node.DownloadPublicKey(uid)
+	publicKey, err := client.DownloadPublicKey(uid)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to download public key: %v", err)
 	}
 
-	crypto := node.CryptoResource{
+	crypto := client.CryptoResource{
 		PrivateKey: privateKey,
 		PublicKey:  publicKey,
 	}
