@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/pem"
 	"fmt"
 	"math"
@@ -42,32 +41,12 @@ type Cache struct {
 	Timestamp    int64  `json:"timestamp"`      // The timestamp when the credentials were computed
 	Alias        string `json:"-"`              // Alias from the client
 	Password     string `json:"-"`              // Password hex hash from the client
-	publicKey    []byte `json:"-"`              // RSA public key
-}
-
-func (c Client) CreateCache() Cache {
-	cka := generateComputedKeyA(c.AccountId)
-
-	hasher := sha256.Sum256([]byte(c.Password))
-	hash := int(binary.BigEndian.Uint64(hasher[:8]))
-
-	ckp := generateComputedKeyP(hash)
-
-	cache := Cache{
-		ComputedKeyA: cka,
-		ComputedKeyP: ckp,
-		Timestamp:    time.Now().Unix(),
-		Alias:        c.Alias,
-		Password:     c.Password,
-		publicKey:    c.ImpersonatePublicKey(),
-	}
-
-	return cache
+	PublicKey    []byte `json:"-"`              // RSA public key
 }
 
 // Creates a encoded and encrypted representation of the cached credentials
 func (c Cache) Token() (string, error) {
-	block, _ := pem.Decode(c.publicKey)
+	block, _ := pem.Decode(c.PublicKey)
 	if block == nil {
 		return "", fmt.Errorf("falha ao decodificar a chave pública")
 	}
@@ -153,7 +132,7 @@ func (c CryptoResource) DecryptToken(encrypted string) (map[string]interface{}, 
 }
 
 // Computes the first key of credentials based on the account id
-func generateComputedKeyA(account string) string {
+func GenerateComputedKeyA(account string) string {
 	accountId, _ := strconv.Atoi(account)
 	mathRand.Seed(time.Now().UnixNano())
 
@@ -178,7 +157,7 @@ func generateComputedKeyA(account string) string {
 }
 
 // Computes the second key of credentials based on the password hash
-func generateComputedKeyP(pwdHash int) string {
+func GenerateComputedKeyP(pwdHash int) string {
 	pwdHash = int(math.Abs(float64(pwdHash)))
 	mathRand.Seed(time.Now().UnixNano())
 

@@ -13,7 +13,7 @@ import (
 	"os"
 )
 
-const BasePath string = "/var/lib/meander"
+var BasePath string = os.Getenv("BASE_PATH")
 
 /*
 Every client has a pair of private and public key to assign the transactions.
@@ -105,7 +105,7 @@ func (c CryptoResource) ImpersonatePublicKey() []byte {
 }
 
 // Writes the byte array from private key to an I/O stream
-func (c CryptoResource) uploadPrivateKey(secret string, uid string) error {
+func (c CryptoResource) UploadPrivateKey(secret string, uid string) error {
 	privBytes, err := x509.MarshalPKCS8PrivateKey(c.PrivateKey)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (c CryptoResource) uploadPrivateKey(secret string, uid string) error {
 }
 
 // Writes the byte array from public key to an I/O stream
-func (c CryptoResource) uploadPublicKey(uid string) error {
+func (c CryptoResource) UploadPublicKey(uid string) error {
 	publicKeyBytes, err := x509.MarshalPKIXPublicKey(c.PublicKey)
 	if err != nil {
 		return err

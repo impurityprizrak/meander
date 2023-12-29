@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	backlog "node/backlog"
+	client "node/client"
 	"os"
 
 	"github.com/google/uuid"
@@ -36,14 +38,16 @@ With this, the node should be understand as a abstraction of the Backlog, since 
 handling layer to connect the clients and the other server resources around the Elastic Search database.
 */
 type Node struct {
-	*Backlog `json:"-"`
-	Mirror   string     `json:"syncer"`  // The host address from some peer that serves as mirror
-	Host     string     `json:"host"`    // The host address from the current node server
-	Version  string     `json:"version"` // Identifier of the source code that's running on the current node server
-	Status   NodeStatus `json:"status"`  // The status of the meander
+	*backlog.Backlog `json:"-"`
+	Mirror           string     `json:"syncer"`  // The host address from some peer that serves as mirror
+	Host             string     `json:"host"`    // The host address from the current node server
+	Version          string     `json:"version"` // Identifier of the source code that's running on the current node server
+	Status           NodeStatus `json:"status"`  // The status of the meander
 }
 
 const nodeVersion string = "2023-12-26"
+
+var BasePath = os.Getenv("BASE_PATH")
 
 // Creates a new node struct since the local host
 func NewLocalNode(syncer string) *Node {
@@ -53,7 +57,7 @@ func NewLocalNode(syncer string) *Node {
 		log.Fatalf("Failed to find the host: %v", err)
 	}
 
-	backlog := NewBacklog()
+	backlog := backlog.NewBacklog()
 	node := Node{
 		Backlog: backlog,
 		Mirror:  syncer,
@@ -76,7 +80,7 @@ func GetLocalNode() *Node {
 	hasher.Write([]byte(host))
 	hash := hex.EncodeToString(hasher.Sum(nil))
 
-	backlog := NewBacklog()
+	backlog := backlog.NewBacklog()
 	nodeData, err := backlog.GetDocument("node", hash)
 	if err != nil {
 		log.Fatalf("Failed to get the node elastic document: %v", err)
@@ -195,7 +199,7 @@ func (n Node) NewLocalClient(alias, address, secret, password string) *Client {
 }
 
 // Manually builds a client in the node with existing informations
-func (n Node) RememberClient(uid, accountId, alias, address, secret, password string) (*Client, Cache) {
+func (n Node) RememberClient(uid, accountId, alias, address, secret, password string) (*Client, client.Cache) {
 	nodeHasher := sha256.New()
 	nodeHasher.Write([]byte(n.Host))
 	nodeHash := hex.EncodeToString(nodeHasher.Sum(nil))
