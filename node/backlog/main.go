@@ -120,7 +120,7 @@ func (b Backlog) CreateIndex(index string) error {
 func (b Backlog) IndexDocument(index, id string, document map[string]interface{}) error {
 	ctx := context.Background()
 
-	if _, err := b.GetDocument(index, id); err != nil {
+	if _, err := b.GetDocument(index, id); err == nil {
 		return b.UpdateDocument(index, id, document)
 	}
 
