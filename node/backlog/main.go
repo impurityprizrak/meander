@@ -52,7 +52,7 @@ func NewBacklog(address ...string) *Backlog {
 
 // This method creates the essential indices of the node backlog
 func (b Backlog) Initialize() {
-	indexes := []string{"peers", "clients", "transactions", "blockchain", "node", "cache"}
+	indexes := []string{"peers", "local_clients", "clients", "transactions", "blockchain", "node", "cache"}
 
 	for _, index := range indexes {
 		err := b.IndexExists(index)

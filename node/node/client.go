@@ -31,6 +31,7 @@ type Client struct {
 	Password               string `json:"password"`   // The hex hash from the password chosen together with the alias to connect the client
 }
 
+// Gives a cache with new computed keys
 func (c Client) CreateCache() client.Cache {
 	cka := client.GenerateComputedKeyA(c.AccountId)
 
@@ -88,7 +89,7 @@ func (c Client) SyncWithBacklog(ca ...client.Cache) error {
 	return nil
 }
 
-// Retrieve the existing RSA key pair for the client and keep in-memory
+// Retrieves the existing RSA key pair for the client and keep in-memory
 func (c *Client) RetrieveCrypto() {
 	private, err := client.DownloadPrivateKey(c.Secret, c.UID)
 
@@ -110,7 +111,7 @@ func (c *Client) RetrieveCrypto() {
 	c.CryptoResource = &crypto
 }
 
-// Generate a new RSA key pair for the client and upload it
+// Generates a new RSA key pair for the client and upload it
 func (c *Client) GenerateCrypto() {
 	crypto, err := client.NewCryptoResource()
 
@@ -128,5 +129,14 @@ func (c *Client) GenerateCrypto() {
 	err = c.UploadPublicKey(c.UID)
 	if err != nil {
 		log.Fatalf("failed to upload public key: %v", err)
+	}
+}
+
+// Converts a Client to a Foreign Client
+func (c Client) MakeForeign() ForeignClient {
+	return ForeignClient{
+		ClientId:    c.ClientId,
+		NodeAddress: c.NodeAddress,
+		Address:     c.Address,
 	}
 }
